@@ -1,6 +1,10 @@
 # splatviz-blender
 Blender addon for gaussian splatting rendering.
 
+
+https://github.com/user-attachments/assets/10a1ac61-c77d-4941-b1e9-7e6ad444b7b4
+
+
 This blender addon is based on [splatviz](https://github.com/Florian-Barthel/splatviz).
 
 Tested on
