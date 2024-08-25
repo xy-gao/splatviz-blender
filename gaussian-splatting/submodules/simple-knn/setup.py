@@ -30,6 +30,7 @@ setup(
             "simple_knn.cu",
             "ext.cpp"],
             include_dirs = [os.path.join(os.environ["ADDON_PATH"], "include")],
+            library_dirs=[os.path.join(os.environ["ADDON_PATH"], "include")],
             extra_compile_args={"nvcc": [], "cxx": cxx_compiler_flags})
         ],
     cmdclass={
