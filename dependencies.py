@@ -102,8 +102,8 @@ class Dependencies:
                 os.fspath(requirements_local_txt),
                 "--target",
                 os.fspath(deps_path),
-                "--global-option",
-                f"-I{add_on_path}"
+                "--config-settings",
+                f"--build-option=--include-dirs={add_on_path}"
             ]
             print(f'Installing: {cmd}')
             subprocess.check_call(cmd)
