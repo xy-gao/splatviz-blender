@@ -9,7 +9,7 @@ This blender addon is based on [splatviz](https://github.com/Florian-Barthel/spl
 
 Tested on
 - Win11
-- Blender 4.0
+- Blender 4.2
 - cuda 11.8
 
 ## Usage
