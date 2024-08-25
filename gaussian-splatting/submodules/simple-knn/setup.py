@@ -9,9 +9,11 @@
 # For inquiries contact  george.drettakis@inria.fr
 #
 
-from setuptools import setup
-from torch.utils.cpp_extension import CUDAExtension, BuildExtension
 import os
+import sys
+from setuptools import setup
+sys.path.append(os.path.join(os.environ["ADDON_PATH"], "deps_public/"))
+from torch.utils.cpp_extension import CUDAExtension, BuildExtension
 
 cxx_compiler_flags = []
 
