@@ -81,8 +81,6 @@ class Dependencies:
                 "install",
                 "-r",
                 os.fspath(requirements_txt),
-                "-r",
-                os.fspath(requirements_local_txt),
                 "--target",
                 os.fspath(deps_path)
             ]
@@ -94,7 +92,26 @@ class Dependencies:
             print(f'  Requirements: {requirements_txt}')
             print(f'  Folder: {deps_path}')
             return False
-
+        
+        try:
+            cmd = [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "-r",
+                os.fspath(requirements_local_txt),
+                "--target",
+                os.fspath(deps_path)
+            ]
+            print(f'Installing: {cmd}')
+            subprocess.check_call(cmd)
+        except subprocess.CalledProcessError as e:
+            print(f'Caught CalledProcessError while trying to install dependencies')
+            print(f'  Exception: {e}')
+            print(f'  Requirements: {requirements_local_txt}')
+            print(f'  Folder: {deps_path}')
+            return False
 
         return Dependencies.check(force=True)
 
