@@ -37,7 +37,6 @@ requirements_local_txt = add_on_path / 'requirements_local.txt'     # assuming r
 requirements_for_check_txt = add_on_path / 'requirements_for_check.txt'     # assuming requirements.txt is at root of add-on
 
 deps_path = add_on_path / 'deps_public'                 # might not exist until install_deps is called
-pythonh_path = os.path.join(add_on_path, "Python.h")
 # Append dependencies folder to system path so we can import
 # (important for Windows machines, but less so for Linux)
 sys.path.append(os.fspath(deps_path))
@@ -104,7 +103,7 @@ class Dependencies:
                 "--target",
                 os.fspath(deps_path),
                 "--global-option",
-                f"-I{pythonh_path}"
+                f"-I{add_on_path}"
             ]
             print(f'Installing: {cmd}')
             subprocess.check_call(cmd)
