@@ -1,0 +1,2 @@
+${ADDON_PATH}/gaussian-splatting/submodules/diff-gaussian-rasterization
+${ADDON_PATH}/gaussian-splatting/submodules/simple-knn

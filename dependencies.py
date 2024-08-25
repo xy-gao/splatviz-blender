@@ -32,6 +32,8 @@ from pathlib import Path
 add_on_path = Path(__file__).parent                     # assuming this file is at root of add-on
 os.environ["ADDON_PATH"] = str(add_on_path)
 requirements_txt = add_on_path / 'requirements.txt'     # assuming requirements.txt is at root of add-on
+requirements_local_txt = add_on_path / 'requirements_local.txt'     # assuming requirements.txt is at root of add-on
+
 requirements_for_check_txt = add_on_path / 'requirements_for_check.txt'     # assuming requirements.txt is at root of add-on
 
 deps_path = add_on_path / 'deps_public'                 # might not exist until install_deps is called
@@ -88,6 +90,26 @@ class Dependencies:
             print(f'Caught CalledProcessError while trying to install dependencies')
             print(f'  Exception: {e}')
             print(f'  Requirements: {requirements_txt}')
+            print(f'  Folder: {deps_path}')
+            return False
+        
+        try:
+            cmd = [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "-r",
+                os.fspath(requirements_local_txt),
+                "--target",
+                os.fspath(deps_path)
+            ]
+            print(f'Installing: {cmd}')
+            subprocess.check_call(cmd)
+        except subprocess.CalledProcessError as e:
+            print(f'Caught CalledProcessError while trying to install dependencies')
+            print(f'  Exception: {e}')
+            print(f'  Requirements: {requirements_local_txt}')
             print(f'  Folder: {deps_path}')
             return False
 
