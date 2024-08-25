@@ -31,7 +31,9 @@ from pathlib import Path
 
 add_on_path = Path(__file__).parent                     # assuming this file is at root of add-on
 os.environ["ADDON_PATH"] = str(add_on_path)
-requirements_txt = add_on_path / 'requirements_for_check.txt'     # assuming requirements.txt is at root of add-on
+requirements_txt = add_on_path / 'requirements.txt'     # assuming requirements.txt is at root of add-on
+requirements_for_check_txt = add_on_path / 'requirements_for_check.txt'     # assuming requirements.txt is at root of add-on
+
 deps_path = add_on_path / 'deps_public'                 # might not exist until install_deps is called
 
 # Append dependencies folder to system path so we can import
@@ -126,7 +128,7 @@ class Dependencies:
             return Dependencies._requirements
 
         # load and cache requirements
-        with requirements_txt.open() as requirements:
+        with requirements_for_check_txt.open() as requirements:
             dependencies = pkg_resources.parse_requirements(requirements)
             Dependencies._requirements = [ dep.project_name for dep in dependencies ]
         return Dependencies._requirements
