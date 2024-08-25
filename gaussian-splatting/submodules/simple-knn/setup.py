@@ -29,7 +29,7 @@ setup(
             "spatial.cu", 
             "simple_knn.cu",
             "ext.cpp"],
-            extra_compile_args={"nvcc": [], "cxx": cxx_compiler_flags})
+            extra_compile_args={"nvcc": [], "cxx": cxx_compiler_flags, "cl": ["-I" + os.environ["ADDON_PATH"]]})
         ],
     cmdclass={
         'build_ext': BuildExtension
