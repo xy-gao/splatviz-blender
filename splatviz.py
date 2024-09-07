@@ -45,15 +45,22 @@ def cam_params_from_camera_mat(camera_mat, x_offset, y_offset, z_offset):
     cam_params = create_cam2world_matrix(forward, cam_pos, up_vector).to("cuda")[0]
     return cam_params
 
-def pixels_from_render_result(result, width, height):
-    if result.image.shape[0] > height:
-        start_pos = int((result.image.shape[0] - height)/2)
-        end_pos = start_pos + height
-        res_img = result.image[start_pos:end_pos,:,:]
+def pixels_from_render_result(result, width, height, depth=False, alpha=False):
+    if depth:
+        img = result.depth_image.to("cpu")
+    elif alpha:
+        img = result.alpha_image.to("cpu")
     else:
-        start_pos = int((result.image.shape[1] - width)/2)
+        img = result.image
+    
+    if img.shape[0] > height:
+        start_pos = int((img.shape[0] - height)/2)
+        end_pos = start_pos + height
+        res_img = img[start_pos:end_pos,:,:]
+    else:
+        start_pos = int((img.shape[1] - width)/2)
         end_pos = start_pos + width
-        res_img = result.image[:,start_pos:end_pos,:]
+        res_img = img[:,start_pos:end_pos,:]
     pixels = np.ones((height, width,4),dtype=np.float32)
     pixels[:,:,:-1] = res_img/255
     return pixels
@@ -85,6 +92,13 @@ class SplatvizRenderEngine(bpy.types.RenderEngine):
 
     # This is the method called by Blender for both final renders (F12) and
     # small preview for materials, world and lights.
+
+    def update_render_passes(self, scene=None, renderlayer=None):
+        self.register_pass(scene, renderlayer, "Combined", 4, "RGBA", 'COLOR')
+        self.register_pass(scene, renderlayer, "Z", 4, "RGBA", 'COLOR')
+        self.register_pass(scene, renderlayer, "ALPHA", 4, "RGBA", 'COLOR')
+
+
     def render(self, depsgraph):
         scene = depsgraph.scene
         scale = scene.render.resolution_percentage / 100.0
@@ -98,15 +112,26 @@ class SplatvizRenderEngine(bpy.types.RenderEngine):
         width, height = self.size_x, self.size_y
         resolution = max(width, height)
         fov = 45
-        args = {'highlight_border': False, 'use_splitscreen': False, 'ply_file_paths': [bpy.types.Scene.gs_file_path], 'current_ply_names': [f'data_{bpy.types.Scene.gs_file_path.split()[0]}'], 'fast_render_mode': False, 'resolution': resolution, 'render_alpha': False, 'render_depth': False, 'render_gan_image': False, 'yaw': 0, 'pitch': 0, 'fov': fov, 'cam_params': cam_params, 'video_cams': [], 'edit_text': '', 'x': 1, 'eval_text': 'gaussian'}
+        args = {'highlight_border': False, 'use_splitscreen': False, 'ply_file_paths': [bpy.types.Scene.gs_file_path], 'current_ply_names': [f'data_{bpy.types.Scene.gs_file_path.split()[0]}'], 'fast_render_mode': False, 'resolution': resolution, 'render_alpha': True, 'render_depth': True, 'render_gan_image': False, 'yaw': 0, 'pitch': 0, 'fov': fov, 'cam_params': cam_params, 'video_cams': [], 'edit_text': '', 'x': 1, 'eval_text': 'gaussian'}
         self._async_renderer.set_args(**args)
-        result = self._async_renderer.get_result()
+        r_result = self._async_renderer.get_result()
 
-        pixels = pixels_from_render_result(result, width, height)
-        # Here we write the pixel values to the RenderResult
         result = self.begin_result(0, 0, self.size_x, self.size_y)
+        pixels = pixels_from_render_result(r_result, width, height)
+        # Here we write the pixel values to the RenderResult
         layer = result.layers[0].passes["Combined"]
         layer.rect = pixels.reshape(-1,4).tolist()
+
+        depth_pixels = pixels_from_render_result(r_result, width, height, depth=True)
+        # Here we write the pixel values to the RenderResult
+        z_layer = result.layers[0].passes["Z"]
+        z_layer.rect = depth_pixels.reshape(-1,4).tolist()
+
+        alpha_pixels = pixels_from_render_result(r_result, width, height, alpha=True)
+        # Here we write the pixel values to the RenderResult
+        a_layer = result.layers[0].passes["ALPHA"]
+        a_layer.rect = alpha_pixels.reshape(-1,4).tolist()
+
         self.end_result(result)
 
     # For viewport renders, this method gets called once at the start and
@@ -193,7 +218,7 @@ class SplatvizDrawData:
         resolution = max(width, height)
         fov = 45
         bpy.context.space_data.lens = (0.1*968 / (2 * math.tan(45 / 2)))
-        args = {'highlight_border': False, 'use_splitscreen': False, 'ply_file_paths': [bpy.types.Scene.gs_file_path], 'current_ply_names': [f'data_{bpy.types.Scene.gs_file_path.split()[0]}'], 'fast_render_mode': False, 'resolution': resolution, 'render_alpha': False, 'render_depth': False, 'render_gan_image': False, 'yaw': 0, 'pitch': 0, 'fov': fov, 'cam_params': cam_params, 'video_cams': [], 'edit_text': '', 'x': 1, 'eval_text': 'gaussian'}
+        args = {'highlight_border': False, 'use_splitscreen': False, 'ply_file_paths': [bpy.types.Scene.gs_file_path], 'current_ply_names': [f'data_{bpy.types.Scene.gs_file_path.split()[0]}'], 'fast_render_mode': False, 'resolution': resolution, 'render_alpha': True, 'render_depth': True, 'render_gan_image': False, 'yaw': 0, 'pitch': 0, 'fov': fov, 'cam_params': cam_params, 'video_cams': [], 'edit_text': '', 'x': 1, 'eval_text': 'gaussian'}
         _async_renderer.set_args(**args)
         result = _async_renderer.get_result()
 
@@ -220,7 +245,7 @@ class SplatvizDrawData:
         resolution = max(width, height)
         fov = 45
 
-        args = {'highlight_border': False, 'use_splitscreen': False, 'ply_file_paths': [bpy.types.Scene.gs_file_path], 'current_ply_names': [f'data_{bpy.types.Scene.gs_file_path.split()[0]}'], 'fast_render_mode': False, 'resolution': resolution, 'render_alpha': False, 'render_depth': False, 'render_gan_image': False, 'yaw': 0, 'pitch': 0, 'fov': fov, 'cam_params': cam_params, 'video_cams': [], 'edit_text': '', 'x': 1, 'eval_text': 'gaussian'}
+        args = {'highlight_border': False, 'use_splitscreen': False, 'ply_file_paths': [bpy.types.Scene.gs_file_path], 'current_ply_names': [f'data_{bpy.types.Scene.gs_file_path.split()[0]}'], 'fast_render_mode': False, 'resolution': resolution, 'render_alpha': True, 'render_depth': True, 'render_gan_image': False, 'yaw': 0, 'pitch': 0, 'fov': fov, 'cam_params': cam_params, 'video_cams': [], 'edit_text': '', 'x': 1, 'eval_text': 'gaussian'}
         self._async_renderer.set_args(**args)
         result = self._async_renderer.get_result()
 

@@ -55,6 +55,8 @@ class GaussianRenderer(Renderer):
         width = resolution
         height = resolution
         images = []
+        alpha_images = []
+        depth_images = []
         if len(ply_file_paths) == 0:
             res.error = "Select a .ply file"
             return
@@ -89,12 +91,10 @@ class GaussianRenderer(Renderer):
             fov_rad = fov / 360 * 2 * np.pi
             render_cam = CustomCam(width, height, fovy=fov_rad, fovx=fov_rad, znear=0.01, zfar=10, extr=cam_params)
             render = render_simple(viewpoint_camera=render_cam, pc=gaussian, bg_color=self.bg_color)
-            if render_alpha:
-                images.append(render["alpha"])
-            elif render_depth:
-                images.append(render["depth"] / render["depth"].max())
-            else:
-                images.append(render["render"])
+            
+            alpha_images.append(render["alpha"])
+            depth_images.append(render["depth"] / 10)
+            images.append(render["render"])
 
             if save_ply_path is not None:
                 os.makedirs(save_ply_path, exist_ok=True)
@@ -113,6 +113,8 @@ class GaussianRenderer(Renderer):
                     img[..., offset - 1 : offset] = 1
 
         else:
+            alpha_img = torch.concat(alpha_images, dim=2)
+            depth_img = torch.concat(depth_images, dim=2)
             img = torch.concat(images, dim=2)
         res.stats = torch.stack(
             [
@@ -128,7 +130,11 @@ class GaussianRenderer(Renderer):
         # Scale and convert to uint8.
         if img_normalize:
             img = img / img.norm(float("inf"), dim=[1, 2], keepdim=True).clip(1e-8, 1e8)
+        alpha_img = (alpha_img * 255).clamp(0, 255).to(torch.uint8).permute(1, 2, 0)
+        depth_img = (depth_img * 255).clamp(0, 255).to(torch.uint8).permute(1, 2, 0)
         img = (img * 255).clamp(0, 255).to(torch.uint8).permute(1, 2, 0)
+        res.alpha_image = alpha_img
+        res.depth_image = depth_img
         res.image = img
         res.mean_xyz = torch.mean(gaussian.get_xyz, dim=0)
         res.std_xyz = torch.std(gaussian.get_xyz)
