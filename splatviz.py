@@ -28,7 +28,7 @@ import math
 from bpy.props import StringProperty, BoolProperty
 from bpy_extras.io_utils import ImportHelper
 from bpy.types import Operator
-
+import time
 
 
 
@@ -100,6 +100,7 @@ class SplatvizRenderEngine(bpy.types.RenderEngine):
 
 
     def render(self, depsgraph):
+        time.sleep(1)
         scene = depsgraph.scene
         scale = scene.render.resolution_percentage / 100.0
         self.size_x = int(scene.render.resolution_x * scale)
@@ -236,6 +237,7 @@ class SplatvizDrawData:
         from gpu_extras.presets import draw_texture_2d
         import time
 
+        self.r3d.view_camera_zoom=30
         camera_mat = self.r3d.view_matrix.inverted()
         x_offset, z_offset, y_offset = set_offset()
 
