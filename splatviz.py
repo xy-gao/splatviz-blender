@@ -95,7 +95,7 @@ class SplatvizRenderEngine(bpy.types.RenderEngine):
 
     def update_render_passes(self, scene=None, renderlayer=None):
         self.register_pass(scene, renderlayer, "Combined", 4, "RGBA", 'COLOR')
-        self.register_pass(scene, renderlayer, "Z", 4, "RGBA", 'COLOR')
+        self.register_pass(scene, renderlayer, "Z", 4, "RGBA", 'VALUE')
         self.register_pass(scene, renderlayer, "ALPHA", 4, "RGBA", 'COLOR')
 
 
@@ -278,7 +278,7 @@ def get_panels():
 class OpenFilebrowser(Operator, ImportHelper):
     bl_idname = "test.open_filebrowser"
     bl_label = "Open the file browser"
-    filter_glob: StringProperty(default='*.ply',options={'HIDDEN'})
+    filter_glob: StringProperty(default='*',options={'HIDDEN'})
     def execute(self, context):
         bpy.types.Scene.gs_file_path = self.filepath
         return {'FINISHED'}
