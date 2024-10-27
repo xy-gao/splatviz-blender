@@ -93,7 +93,7 @@ class GaussianRenderer(Renderer):
             render = render_simple(viewpoint_camera=render_cam, pc=gaussian, bg_color=self.bg_color)
             
             alpha_images.append(render["alpha"])
-            depth_images.append(render["depth"] / 10)
+            depth_images.append(render["depth"])
             images.append(render["render"])
 
             if save_ply_path is not None:
@@ -131,7 +131,7 @@ class GaussianRenderer(Renderer):
         if img_normalize:
             img = img / img.norm(float("inf"), dim=[1, 2], keepdim=True).clip(1e-8, 1e8)
         alpha_img = (alpha_img * 255).clamp(0, 255).to(torch.uint8).permute(1, 2, 0)
-        depth_img = (depth_img * 255).clamp(0, 255).to(torch.uint8).permute(1, 2, 0)
+        depth_img = (depth_img * 255).permute(1, 2, 0)
         img = (img * 255).clamp(0, 255).to(torch.uint8).permute(1, 2, 0)
         res.alpha_image = alpha_img
         res.depth_image = depth_img
