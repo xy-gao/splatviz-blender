@@ -84,6 +84,7 @@ class SplatvizRenderEngine(bpy.types.RenderEngine):
         self.scene_data = None
         self.draw_data = None
         bpy.context.scene.view_settings.view_transform = 'Raw'
+        bpy.context.scene.camera.data.angle=0.785398
 
     # When the render engine instance is destroy, this is called. Clean up any
     # render engine data here, for example stopping running render threads.
@@ -236,8 +237,9 @@ class SplatvizDrawData:
         import gpu
         from gpu_extras.presets import draw_texture_2d
         import time
-
-        self.r3d.view_camera_zoom=30
+        
+        self.r3d.view_camera_offset = [0,0]
+        self.r3d.view_camera_zoom=29
         camera_mat = self.r3d.view_matrix.inverted()
         x_offset, z_offset, y_offset = set_offset()
 
