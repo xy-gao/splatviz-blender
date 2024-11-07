@@ -21,7 +21,8 @@ Tested on
 2. Install addon from blender preference
 3. Install dependencies
 4. Change render engine to Splatviz
-5. Preview and render with animated camera.
+5. switch viewport render to material preview or render preview.
+6. Preview and render with animated camera.
 
 (Since this addon has no editing capability, simple editing for example aligning with ground can be done at [supersplat](https://playcanvas.com/supersplat/editor))
 
