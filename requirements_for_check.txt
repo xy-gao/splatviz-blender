@@ -1,6 +1,6 @@
-torch==2.2.2
-torchvision==0.17.2
-torchaudio==2.2.2
+torch
+torchvision
+torchaudio
 click==8.1
 glfw==2.7
 imageio-ffmpeg==0.5
