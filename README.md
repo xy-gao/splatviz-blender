@@ -14,7 +14,7 @@ This blender addon is based on [splatviz](https://github.com/Florian-Barthel/spl
 Tested on
 - Win11
 - Blender 4.2
-- cuda 11.8
+- ~~cuda 11.8~~ cuda 12.6
 
 ## Usage
 1. Download zip 
